@@ -1,7 +1,7 @@
 package com.example.MsaBackendApplication.controller;
 
-import com.example.MsaBackendApplication.model.Doctor;
-import com.example.MsaBackendApplication.repository.UserRepository;
+import com.example.MsaBackendApplication.model.User;
+import com.example.MsaBackendApplication.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,48 +11,44 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/doctors")
+@RequestMapping("/api/doctors")
 public class DoctorController {
 
     @Autowired
-    private UserRepository userRepository;
+    private UserService userService;  // Using UserService as Doctor is a type of User
 
+    // Get all doctors
     @GetMapping
-    public List<Doctor> getAllDoctors() {
-        return userRepository.findAll().stream()
-                .filter(user -> user instanceof Doctor)
-                .map(user -> (Doctor) user)
-                .toList();
+    public ResponseEntity<List<User>> getAllDoctors() {
+        List<User> doctors = userService.getAllUsers();
+        return new ResponseEntity<>(doctors, HttpStatus.OK);
     }
 
+    // Get doctor by ID
     @GetMapping("/{id}")
-    public ResponseEntity<Doctor> getDoctorById(@PathVariable String id) {
-        Optional<Doctor> doctor = userRepository.findById(id).filter(user -> user instanceof Doctor).map(user -> (Doctor) user);
+    public ResponseEntity<User> getDoctorById(@PathVariable String id) {
+        Optional<User> doctor = userService.getUserById(id);
         return doctor.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
+    // Create a new doctor
     @PostMapping
-    public ResponseEntity<Doctor> createDoctor(@RequestBody Doctor doctor) {
-        Doctor savedDoctor = (Doctor) userRepository.save(doctor);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedDoctor);
+    public ResponseEntity<User> createDoctor(@RequestBody User doctor) {
+        User createdDoctor = userService.createUser(doctor);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdDoctor);
     }
 
+    // Update doctor by ID
     @PutMapping("/{id}")
-    public ResponseEntity<Doctor> updateDoctor(@PathVariable String id, @RequestBody Doctor doctor) {
-        if (!userRepository.existsById(id)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-        doctor.setId(id);
-        Doctor updatedDoctor = (Doctor) userRepository.save(doctor);
-        return ResponseEntity.ok(updatedDoctor);
+    public ResponseEntity<User> updateDoctor(@PathVariable String id, @RequestBody User doctor) {
+        User updatedDoctor = userService.updateUser(id, doctor);
+        return updatedDoctor != null ? ResponseEntity.ok(updatedDoctor) : ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
+    // Delete doctor by ID
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteDoctor(@PathVariable String id) {
-        if (!userRepository.existsById(id)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-        userRepository.deleteById(id);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        boolean isDeleted = userService.deleteUser(id);
+        return isDeleted ? ResponseEntity.noContent().build() : ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 }
