@@ -22,4 +22,5 @@ public class User {
     private boolean isOnline;
     private int unreadMessages;
     private String icon;
+    private boolean isPatient;
 }

@@ -20,7 +20,10 @@ public class DoctorController {
     // Get all doctors
     @GetMapping
     public ResponseEntity<List<User>> getAllDoctors() {
-        List<User> doctors = userService.getAllUsers();
+        List<User> doctors = userService.getAllUsers()
+                .stream()
+                .filter(user -> !user.isPatient()) // Filter for users who are doctors
+                .toList();
         return new ResponseEntity<>(doctors, HttpStatus.OK);
     }
 

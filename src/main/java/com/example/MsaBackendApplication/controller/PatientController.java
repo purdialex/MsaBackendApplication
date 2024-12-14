@@ -2,6 +2,7 @@ package com.example.MsaBackendApplication.controller;
 
 import com.example.MsaBackendApplication.model.Patient;
 import com.example.MsaBackendApplication.service.UserService;
+import com.example.MsaBackendApplication.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,11 +21,10 @@ public class PatientController {
 
     // Get all patients
     @GetMapping
-    public ResponseEntity<List<Patient>> getAllPatients() {
-        List<Patient> patients = userService.getAllUsers().stream()
-                .filter(user -> user instanceof Patient)  // Filter only Patient objects
-                .map(user -> (Patient) user)  // Cast to Patient
-                .collect(Collectors.toList());
+    public ResponseEntity<List<User>> getAllPatients() {
+        List<User> patients = userService.getAllUsers().stream()
+                .filter(User::isPatient) // Filter users where isPatient is true
+                .collect(Collectors.toList()); // Collect the filtered result into a List
         return new ResponseEntity<>(patients, HttpStatus.OK);
     }
 
